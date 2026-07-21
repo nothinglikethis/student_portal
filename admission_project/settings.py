@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-me')
 DEBUG = False
 
-ALLOWED_HOSTS = ['admission.pythonanywhere.com']
+ALLOWED_HOSTS = ['shruten.pythonanywhere.com']
 env_hosts = os.getenv('ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS.extend([host.strip() for host in env_hosts if host.strip()])
 CSRF_TRUSTED_ORIGINS = [
