@@ -1,0 +1,388 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — Admission Portal</title>
+    <script src="{% static 'portal/js/lucide.min.js' %}"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --easing: cubic-bezier(0.4, 0, 0.2, 1);
+            --blue: #2563EB;
+            --blue-hover: #1D4ED8;
+            --blue-glow: rgba(37, 99, 235, 0.25);
+            --blue-ring: rgba(37, 99, 235, 0.15);
+            --error-red: #DC2626;
+            --gray-text: #64748B;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #172554, #0F172A);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 767px) {
+            body {
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+        }
+
+        .glow-1, .glow-2 {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .glow-1 {
+            width: 800px;
+            height: 800px;
+            background: #3B82F6;
+            top: -200px;
+            left: -200px;
+            filter: blur(450px);
+            opacity: 0.08;
+        }
+        .glow-2 {
+            width: 600px;
+            height: 600px;
+            background: #818CF8;
+            bottom: -100px;
+            right: -100px;
+            filter: blur(420px);
+            opacity: 0.10;
+        }
+
+        .card {
+            width: 420px;
+            max-width: 92vw;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            z-index: 10;
+            position: relative;
+            
+            animation: cardEnter 300ms var(--easing) forwards;
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        @keyframes cardEnter {
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .header {
+            height: 160px;
+            background: #111827;
+            padding: 40px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .header svg {
+            width: 48px;
+            height: 48px;
+            color: #FFFFFF;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.1;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .content {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        @media (max-width: 767px) {
+            .content { padding: 24px; }
+            .header { padding: 32px 24px; }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper svg {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: #94A3B8;
+            pointer-events: none;
+            transition: color 200ms var(--easing);
+        }
+
+        .input-field {
+            width: 100%;
+            height: 52px;
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 12px;
+            padding: 0 16px 0 44px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #0F172A;
+            font-family: inherit;
+            transition: all 200ms var(--easing);
+        }
+
+        .input-field:hover {
+            border-color: #94A3B8;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px var(--blue-ring);
+            background: #FFFFFF;
+        }
+
+        .input-field:focus + svg {
+            color: var(--blue);
+        }
+
+        .btn-submit {
+            width: 100%;
+            height: 52px;
+            background: var(--blue);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 10px 24px var(--blue-glow);
+            transition: all 150ms var(--easing);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: var(--blue-hover);
+            transform: translateY(-1px) scale(1.01);
+        }
+
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-submit:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 4px var(--blue-ring), 0 10px 24px var(--blue-glow);
+        }
+
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #FFF;
+            animation: spin 800ms linear infinite;
+            position: absolute;
+        }
+
+        .btn-text {
+            transition: opacity 150ms var(--easing);
+        }
+
+        .btn-submit.loading .spinner { display: block; }
+        .btn-submit.loading .btn-text { opacity: 0; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: var(--error-red);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 16px;
+            border-radius: 8px;
+            animation: shake 300ms var(--easing);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: -8px;
+        }
+
+        .back-link {
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-text);
+            text-decoration: underline;
+            padding: 8px;
+            border-radius: 6px;
+            transition: color 150ms var(--easing);
+        }
+
+        .back-link:hover {
+            color: var(--blue);
+        }
+        
+        .back-link:focus-visible {
+            outline: 2px solid var(--blue);
+            outline-offset: 2px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+
+    <div class="card" role="main">
+        <div class="header">
+            <i data-lucide="shield-check"></i>
+            <h1>Admin Portal</h1>
+            <p>HOD / Admissions Office</p>
+        </div>
+
+        <div class="content">
+            <form method="POST" id="loginForm" class="space-y-6" style="display: flex; flex-direction: column; gap: 24px;">
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <label for="username">Admin Username</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="username"
+                            name="username" 
+                            required 
+                            placeholder="Enter admin username"
+                            aria-label="Admin Username"
+                            autocomplete="username"
+                            class="input-field"
+                            autofocus
+                        >
+                        <i data-lucide="user"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password"
+                            name="password" 
+                            required 
+                            placeholder="Enter password"
+                            aria-label="Admin Password"
+                            autocomplete="current-password"
+                            class="input-field"
+                        >
+                        <i data-lucide="lock"></i>
+                    </div>
+                </div>
+
+                <div aria-live="polite">
+                    {% if error %}
+                    <div class="error-message">
+                        <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">Authenticate</span>
+                    <div class="spinner"></div>
+                </button>
+            </form>
+
+            <div class="footer">
+                <a href="{% url 'student_login' %}" class="back-link">← Back to Student Portal</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', (e) => {
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+        });
+    </script>
+</body>
+</html>

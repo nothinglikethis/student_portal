@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Admission Portal</title>
+    <script src="{% static 'portal/js/tailwindcss.js' %}"></script>
+    <script src="{% static 'portal/js/lucide.min.js' %}"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100">
+
+    <!-- Top Nav -->
+    <nav class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center shadow">
+        <div class="flex items-center gap-2">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            <span class="font-bold text-lg">Admissions Dashboard</span>
+            <span class="text-gray-400 text-sm ml-2">AIML &amp; AIRO</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{% url 'staff_management' %}" class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+                <i data-lucide="users" class="w-4 h-4"></i> Staff Management
+            </a>
+            <a href="{% url 'process_all' %}"
+                class="flex items-center gap-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Re-process All
+            </a>
+            <a href="{% url 'admin_logout' %}" class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-red-400 transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+                        {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+                <i data-lucide="{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}" class="w-4 h-4 flex-shrink-0"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="bg-indigo-100 p-3 rounded-lg"><i data-lucide="users" class="w-6 h-6 text-indigo-600"></i></div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ students|length }}</p>
+                    <p class="text-sm text-gray-500">Total Students</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="bg-green-100 p-3 rounded-lg"><i data-lucide="check-circle-2" class="w-6 h-6 text-green-600"></i></div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ approved_count }}</p>
+                    <p class="text-sm text-gray-500">Approved</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="bg-amber-100 p-3 rounded-lg"><i data-lucide="alert-triangle" class="w-6 h-6 text-amber-600"></i></div>
+                <div>
+                    <p class="text-2xl font-bold text-gray-900">{{ hold_count }}</p>
+                    <p class="text-sm text-gray-500">On Hold</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Search UG Number</label>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+                    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="e.g. AIML001" class="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Division</label>
+                <select name="division" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Divisions</option>
+                    <option value="AIML" {% if division_filter == "AIML" %}selected{% endif %}>AIML</option>
+                    <option value="AIRO" {% if division_filter == "AIRO" %}selected{% endif %}>AIRO</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Statuses</option>
+                    <option value="APPROVED" {% if status_filter == "APPROVED" %}selected{% endif %}>Approved</option>
+                    <option value="HOLD" {% if status_filter == "HOLD" %}selected{% endif %}>On Hold</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Sort By</label>
+                <select name="sort" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="newest" {% if sort_filter == "newest" or not sort_filter %}selected{% endif %}>Newest First</option>
+                    <option value="docs_asc" {% if sort_filter == "docs_asc" %}selected{% endif %}>Pending Docs: Low to High</option>
+                    <option value="docs_desc" {% if sort_filter == "docs_desc" %}selected{% endif %}>Pending Docs: High to Low</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                Apply Filters
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="text-sm text-gray-500 hover:text-gray-700 py-2">Clear</a>
+        </form>
+
+        <!-- Student Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">UG Number</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Division</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Forms</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Pending Documents</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        {% for student in students %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 font-mono font-medium text-gray-900">{{ student.ug_number }}</td>
+                            <td class="px-4 py-3 text-gray-700">{{ student.name }}</td>
+                            <td class="px-4 py-3 text-gray-700">
+                                {% if student.division == "AIML" %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">{{ student.division }}</span>
+                                {% elif student.division == "AIRO" %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">{{ student.division }}</span>
+                                {% else %}
+                                <span class="text-xs text-gray-400">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if student.admission_status == "APPROVED" %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                    <i data-lucide="check" class="w-3 h-3"></i> Approved
+                                </span>
+                                {% elif student.admission_status == "HOLD" %}
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                                    <i data-lucide="clock" class="w-3 h-3"></i> Hold
+                                </span>
+                                {% else %}
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">Pending</span>
+                                {% endif %}
+                            </td>
+                            <!-- Forms column -->
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    {% if student.personal_done %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700">Personal</span>
+                                    {% else %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">Personal</span>
+                                    {% endif %}
+                                    {% if student.academic_done %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700">Academic</span>
+                                    {% else %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">Academic</span>
+                                    {% endif %}
+                                    {% if student.residence_done %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-green-100 text-green-700">Residence</span>
+                                    {% else %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-red-100 text-red-600">Residence</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <!-- Pending documents column -->
+                            <td class="px-4 py-3">
+                                {% if student.documents_done %}
+                                <span class="text-xs text-green-600 font-medium">✓ All submitted</span>
+                                {% else %}
+                                <div class="flex flex-wrap gap-1">
+                                    {% for field, label in student.pending_individual_docs %}
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-amber-100 text-amber-800">{{ label }}</span>
+                                    {% empty %}
+                                    <span class="text-xs text-gray-400">Processing…</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <!-- Actions column -->
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <a href="{% url 'impersonate_student' student.ug_number %}"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white transition-colors">
+                                        <i data-lucide="user-check" class="w-3.5 h-3.5"></i> Impersonate
+                                    </a>
+                                    <form method="POST"
+                                          action="{% url 'hod_reset_student_password' student.ug_number %}"
+                                          onsubmit="const pwd = prompt('Enter the new custom password for this student:'); if (!pwd) return false; this.querySelector('input[name=new_password]').value = pwd; return true;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="new_password" value="">
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700 hover:bg-amber-600 hover:text-white transition-colors">
+                                            <i data-lucide="key" class="w-3.5 h-3.5"></i> Reset Pwd
+                                        </button>
+                                    </form>
+                                    <form method="POST"
+                                          action="{% url 'delete_student' student.ug_number %}"
+                                          onsubmit="return confirm('Permanently delete {{ student.name }} ({{ student.ug_number }})? This cannot be undone.')">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-600 hover:text-white transition-colors">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-4 py-10 text-center text-gray-400">No students found matching the selected filters.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

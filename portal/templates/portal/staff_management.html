@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management — Admission Portal</title>
+    <script src="{% static 'portal/js/tailwindcss.js' %}"></script>
+    <script src="{% static 'portal/js/lucide.min.js' %}"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100">
+
+    <!-- Top Nav -->
+    <nav class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center shadow">
+        <div class="flex items-center gap-2">
+            <i data-lucide="shield" class="w-5 h-5"></i>
+            <span class="font-bold text-lg">Staff Management</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="space-y-2">
+            {% for message in messages %}
+            <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
+                        {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-200
+                        {% else %}bg-red-100 text-red-800 border border-red-200{% endif %}">
+                <i data-lucide="{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}" class="w-4 h-4 flex-shrink-0"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Add Admin Form -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-4 h-4 text-indigo-500"></i> Add New Administrator
+                </h2>
+            </div>
+            <div class="p-6">
+                <form method="POST" class="flex gap-4 items-end">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_admin">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                        <input type="text" name="username" required placeholder="e.g. admin_team4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 rounded-lg transition-colors flex items-center gap-2">
+                        Create Account
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin List -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4 text-gray-500"></i> Active Administrators
+                </h2>
+                <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ admins|length }} Total</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider">
+                            <th class="px-6 py-3 font-medium">Username</th>
+                            <th class="px-6 py-3 font-medium">Role</th>
+                            <th class="px-6 py-3 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for admin in admins %}
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ admin.username }}</td>
+                            <td class="px-6 py-4 text-sm">
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded border border-green-200">Superuser</span>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                {% if admin.id != 1 %}
+                                <div class="flex items-center justify-end gap-3">
+                                    <form method="POST" class="inline-block" onsubmit="let newUsername = prompt('Enter new username for {{ admin.username }}:', '{{ admin.username }}'); if(!newUsername || newUsername.trim() === '{{ admin.username }}') return false; this.new_username.value = newUsername; return true;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="change_username">
+                                        <input type="hidden" name="user_id" value="{{ admin.id }}">
+                                        <input type="hidden" name="new_username" value="">
+                                        <button type="submit" class="text-sm text-gray-600 hover:text-indigo-600 font-medium flex items-center gap-1.5 transition-colors" title="Change Username">
+                                            <i data-lucide="edit" class="w-4 h-4"></i> Edit
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" class="inline-block" onsubmit="let newPass = prompt('Enter new custom password for {{ admin.username }}:'); if(!newPass || newPass.trim() === '') return false; this.new_password.value = newPass; return true;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reset_password">
+                                        <input type="hidden" name="user_id" value="{{ admin.id }}">
+                                        <input type="hidden" name="new_password" value="">
+                                        <button type="submit" class="text-sm text-indigo-600 hover:text-indigo-900 font-medium flex items-center gap-1.5 transition-colors" title="Set Custom Password">
+                                            <i data-lucide="key" class="w-4 h-4"></i> Password
+                                        </button>
+                                    </form>
+
+                                    <form action="{% url 'delete_staff' admin.id %}" method="POST" class="inline-block" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete the admin account for {{ admin.username }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-sm text-red-600 hover:text-red-900 font-medium flex items-center gap-1.5 transition-colors" title="Delete Account">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-1 rounded border border-gray-200">System Owner</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>lucide.createIcons();</script>
+</body>
+</html>

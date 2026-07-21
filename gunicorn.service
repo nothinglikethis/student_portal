@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=shruten-vala
+Group=www-data
+WorkingDirectory=/home/shruten-vala/Desktop/copied/Parul_Admissions_System (Copy)/Admission-app-main
+ExecStart="/home/shruten-vala/Desktop/copied/Parul_Admissions_System (Copy)/Admission-app-main/venv/bin/python" -m gunicorn --access-logfile - --workers 3 --bind "unix:/home/shruten-vala/Desktop/copied/Parul_Admissions_System (Copy)/Admission-app-main/gunicorn.sock" admission_project.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
