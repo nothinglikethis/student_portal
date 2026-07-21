@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -60,17 +61,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'admission_project.wsgi.application'
 
-# PostgreSQL database configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'admissions_db'),
-        'USER': os.getenv('DB_USER', 'admissions_admin'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'ParulSecure2026'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+# PostgreSQL / SQLite database configuration
+if os.getenv('USE_SQLITE', 'False') == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'admissions_db'),
+            'USER': os.getenv('DB_USER', 'admissions_admin'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'ParulSecure2026'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 STATIC_URL = '/static/'
 
